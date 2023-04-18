@@ -80,7 +80,7 @@ def es_int(valor:str):
     else:
         return False
 
-
+#comentario
 def verificar_rango(valor, n):
     if es_int(valor):
         return int(valor)>0 and int(valor)<=n
