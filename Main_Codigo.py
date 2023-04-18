@@ -1,6 +1,6 @@
 import os
 import csv
-from Funciones import *
+from Validadores import *
 from datetime import datetime
 from time import sleep
 
