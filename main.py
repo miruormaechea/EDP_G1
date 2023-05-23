@@ -75,7 +75,7 @@ class Cliente(Persona):
         print("1. Ver productos")
         print("2. Hacer pedido")
         print("3. Ver pedidos")
-        print("4. Salir")
+        print("4. Cerrar Sesion")
 
 class Admin(Persona):
     def __init__(self, nombre, apellido, username, password):
@@ -92,7 +92,7 @@ class Admin(Persona):
             print("1. Ver productos actuales")
             print("2. Ver estadisticas")
             print("3. Editar productos")
-            print("4. Salir")
+            print("4. Cerrar Sesion")
             opcion = "a"
             while not verificar_rango(opcion, 4):
                 opcion = input("Elija una opcion: ")
@@ -178,7 +178,7 @@ class Producto():
         while not verificar_rango(key_a_modificar, len(diccionario_a_modificar)+1):
             key_a_modificar = input("Que tipo quiere modificar?")
         try:
-            opcion_seleccionada = list(diccionario_a_modificar)[int(key_a_modificar)]
+            opcion_seleccionada = list(diccionario_a_modificar)[int(key_a_modificar)-1]
         except IndexError:
             opcion_seleccionada = input("Que le gustaria agregar?")
         precio = input("Que precio le gustaria?")
