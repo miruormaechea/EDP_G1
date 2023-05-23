@@ -3,8 +3,12 @@ import csv  # esta libreria es para las hojas de calculo
 from Funciones import *  # este import nos trae la parte del codigo con todos los validadores
 from datetime import datetime  # la usamos para las fechas
 from time import sleep  # la usamos como "cooldown" de pantalla
-import matplotlib.pyplot as plt
-from collections import defaultdict
+import pickle
+pedidos_file = "pedidos.csv"
+users_file = "users.txt"
+admin_file = "admin.txt"
+users_data_file = "usuarios.csv"
+
 
 
 class Persona():
@@ -76,6 +80,56 @@ class Cliente(Persona):
         print("3. Ver pedidos")
         print("4. Salir")
 
+
+
+
+class Admin(Persona):
+    def __init__(self, nombre, apellido, username, password):
+        super().__init__(nombre, apellido, username, password)
+
+    def __str__(self):
+        return f"Admin: {self.nombre} {self.apellido}\nUsername: {self.username}"
+
+    def menu(self):
+        os.system('cls' if os.name == 'nt' else 'clear')
+        print("Bienvenido administrador!")
+        print("1. Ver productos actuales")
+        print("2. Ver estadisticas")
+        print("3. Editar productos")
+        print("4. Salir")
+
+    def
+
+class Producto():
+    def __init__(self):
+        # aca los guardo como diccionario
+        self.sabor = {
+            "Chocolate": 100,
+            "Vainilla": 200,
+            "Frutilla": 400,
+            "Zanahoria": 5000
+        }
+        self.relleno = {
+            "Sin relleno": 0,
+            "Dulce de leche": 400,
+            "Crema Pastelera": 300,
+            "Batata": 400,
+            "Membrillo": 300
+        }
+        self.cobertura = {
+            "Sin cobertura": 0,
+            "Chocolate": 100,
+            "Crema": 30
+        }
+        self.sprinkle = {
+            "Sin sprinkles": 0,
+            "Chocolate": 400,
+            "Multicolor": 200
+        }
+
+    def __str__(self):
+        return f"Producto\nSabor: {self.sabor}\nRelleno: {self.relleno}\nCobertura: {self.cobertura}\nSprinkle: {self.sprinkle}"
+
     def ver_productos(self, opcion=None):
         os.system('cls' if os.name == 'nt' else 'clear')
         if opcion == None:
@@ -111,54 +165,6 @@ class Cliente(Persona):
                 for sprinkle, precio in producto.sprinkle.items():
                     cont += 1
                     print(f"{cont} {sprinkle} - ${precio}")
-
-
-class Admin(Persona):
-    def __init__(self, nombre, apellido, username, password):
-        super().__init__(nombre, apellido, username, password)
-
-    def __str__(self):
-        return f"Admin: {self.nombre} {self.apellido}\nUsername: {self.username}"
-
-    def menu_admin(self):
-        os.system('cls' if os.name == 'nt' else 'clear')
-        print("Bienvenido administrador!")
-        print("1. Ver productos actuales")
-        print("2. Ver estadisticas")
-        print("3. Editar productos")
-        print("4. Salir")
-
-
-class Producto():
-    def __init__(self):
-        # aca los guardo como diccionario
-        self.sabor = {
-            "Chocolate": 100,
-            "Vainilla": 200,
-            "Frutilla": 400,
-            "Zanahoria": 5000
-        }
-        self.relleno = {
-            "Sin relleno": 0,
-            "Dulce de leche": 400,
-            "Crema Pastelera": 300,
-            "Batata": 400,
-            "Membrillo": 300
-        }
-        self.cobertura = {
-            "Sin cobertura": 0,
-            "Chocolate": 100,
-            "Crema": 30
-        }
-        self.sprinkle = {
-            "Sin sprinkles": 0,
-            "Chocolate": 400,
-            "Multicolor": 200
-        }
-
-    def __str__(self):
-        return f"Producto\nSabor: {self.sabor}\nRelleno: {self.relleno}\nCobertura: {self.cobertura}\nSprinkle: {self.sprinkle}"
-
 
 class Pedido():
     # Tiene un constructor que inicializa los atributos de un pedido
@@ -274,7 +280,6 @@ class Pedido():
     def escribir_archivo(self):
         header = ["Fecha", "Hora", "Usuario", "Sabor", "Relleno", "Cobertura", "Sprinkle", "Cantidad de Cupcakes",
                   "Total"]
-        pedidos_file = "C:/Users/ormae/OneDrive/Documents/pedidos.csv"
 
         if not os.path.isfile(pedidos_file) or os.path.getsize(pedidos_file) == 0:
             with open(pedidos_file, "w", newline='') as f:
@@ -295,7 +300,6 @@ class Pedido():
         header = ["Fecha", "Hora", "Usuario", "Sabor", "Relleno", "Cobertura", "Sprinkle",
                   "Cantidad de Cupcakes", "Total"]
 
-        pedidos_file = "C:/Users/ormae/OneDrive/Documents/pedidos.csv"
 
         try:
             with open(pedidos_file, mode='r') as csv_file:
@@ -337,7 +341,20 @@ class Pedido():
             print(f'Error: el archivo {pedidos_file} no se encuentra')
 
 
-class Tienda():
+class Tienda:
+
+    def __init__(self,nombre, direccion, usuarios:dict = None):
+        self.nombre = nombre
+        self.direccion = direccion
+        self.usuarios = usuarios
+        self.productos = Producto()
+        if usuarios is None:
+            self.usuarios = dict()
+            admin = Admin("Admin", "Maestro", "admin", "pass") #el usuario del admin es el mismo siempre por default
+            self.usuarios["admin"] = admin
+            print(f"fSe creo el usuario Admin con los siguientes datos , {admin} ")
+
+
     def __str__(self):
         return f"Tienda: {self}"
 
@@ -347,114 +364,46 @@ class Tienda():
 
         inicio = False
         opcion = 0
-        users_file = "C:/Users/ormae/OneDrive/Documents/users.txt"
-        admin_file = "C:/Users/ormae/OneDrive/Documents/admin.txt"
-        users_data_file = "C:/Users/ormae/OneDrive/Documents/usuarios.csv"
-
-        if not os.path.isfile(users_file) or os.path.getsize(users_file) == 0:
-            with open(users_file, "w") as f:
-                pass
-        if not os.path.isfile(admin_file) or os.path.getsize(admin_file) == 0:
-            with open(admin_file, "w") as f:
-                pass
-
-        if not os.path.isfile(users_data_file) or os.path.getsize(users_data_file) == 0:
-            with open(users_data_file, "w", newline='') as f:
-                header = ["Nombre de Usuario", "DNI", "Nombre", "Apellido", "Calle", "Altura", "Mail", "Telefono"]
-                writer = csv.writer(f)
-                writer.writerow(header)
 
         while inicio != True:
-            opcion = input("Seleccione una opcion:\n1.Iniciar sesion\n2.Crear cuenta\n3.Log in Administrador\n")
-            admin = False
+            opcion = 4
+            while not verificar_rango(opcion,3):
+                opcion = input("Seleccione una opcion:\n1.Iniciar sesion\n2.Crear cuenta\n3.Salir\n")
 
-            if opcion == "1":
-                usuario_login = input("Ingrese su Usuario: ")
-                password_login = input("Ingrese su contrasena: ")
-                cont_login = 0
-                with open(users_file, 'r') as f:
-                    lines = f.readlines()
-                    for line in lines:
-                        if ':' in line:
-                            user, pw = line.strip().split(":")
-                            if user == usuario_login and pw == password_login:
-                                print("Login exitoso!")
-                                cont_login = 1
-                                inicio = True
-                                break
-                    if cont_login != 1:
-                        print("Usuario o Contrasena incorrectos.")
-
-            elif opcion == "2":
-                cliente_nuevo = Cliente.crear_cliente()
-
-                with open(users_file, "r") as f:
-                    lines = f.readlines()
-                    for line in lines:
-                        if ':' in line:
-                            user, pw = line.strip().split(":")
-                            if user == cliente_nuevo.nombre_usuario:
-                                print("El usuario ya existe.")
-                                break
-
+            match int(opcion):
+                case 1:
+                    usuario_login = input("Ingrese su Usuario: ")
+                    password_login = input("Ingrese su contrasena: ")
+                    usuario_seleccionado = self.usuarios.get(usuario_login)
+                    if usuario_seleccionado is None:
+                        print("El Usuario no existe")
+                    elif usuario_seleccionado.password != password_login:
+                        print("Contrasena incorrecta")
                     else:
-                        with open(users_file, "a") as f:
-                            f.write(f"{cliente_nuevo.nombre_usuario}:{cliente_nuevo.password}\n")
-                            print("Usuario creado exitosamente.")
+                        print("Login exitoso!")
+                        usuario_seleccionado.menu()
 
-                        with open(users_data_file, "a", newline='') as f:
-                            writer = csv.writer(f)
-                            writer.writerow([cliente_nuevo.nombre_usuario, cliente_nuevo.dni, cliente_nuevo.nombre,
-                                             cliente_nuevo.apellido, cliente_nuevo.calle, cliente_nuevo.altura,
-                                             cliente_nuevo.mail, cliente_nuevo.telefono])
-            else:
-                admin_login = input("Ingrese su nombre de usuario de administrador: ")
-                admin_password = input("Ingrese su contraseña de administrador: ")
-                with open(admin_file, 'r') as f:
-                    lines = f.readlines()
-                    for line in lines:
-                        if ':' in line:
-                            user, pw = line.strip().split(":")
-                            if user == admin_login and pw == admin_password:
-                                print("Login de administrador exitoso!")
-                                admin = True
-                                inicio = True
-                                break
+                case 2:
+                    cliente_nuevo = Cliente.crear_cliente()
+                    if self.usuarios.get(cliente_nuevo.nombre_usuario) is None:
+                        self.usuarios[cliente_nuevo.nombre_usuario] = cliente_nuevo
                     else:
-                        print("Nombre de usuario o contraseña de administrador incorrectos.")
+                        print("Ya existe ese Usuario")
 
-            while True and inicio == True and not admin:
-                Cliente.menu(self)
-                opcion = input("Seleccione una opción: ")
-                if opcion == "1":  # opcion ver productos
-                    Cliente.ver_productos(self)
-                    input("Presione Enter para volver al menu principal.")
-                elif opcion == "2":  # opcion hacer pedido
-                    Cliente.hacer_pedido(usuario_login)
-                elif opcion == "3":  # opcion ver pedidos
-                    Cliente.ver_pedidos(usuario_login)
-                elif opcion == "4":  # opcion salir
-                    print("Gracias por visitar la tienda de cupcakes online!")
+                case 3:
+                    print("Gracias por usar nuestro programa!")
                     break
-                else:
-                    print("Opción inválida. Por favor ingrese un número del 1 al 4.")
-                    input("Presione Enter para continuar")
-            while True and inicio == True and admin == True:
-                Admin.menu_admin(self)
-                opcion = input("Seleccione una opción: ")
-                if opcion == "1":  # opcion ver productos
-                    self.ver_productos()
-                    input("Presione Enter para volver al menu principal.")
-                elif opcion == "2":  # ver estadisticas
-                    stats = True
-                    self.ver_pedidos(None, stats)
-                elif opcion == "3":  # opcion salir
-                    print("Adios administrador!")
-                    break
-                else:
-                    print("Opción inválida. Por favor ingrese un número del 1 al 3.")
-                    input("Presione Enter para continuar")
+
+    def guardarDatos(self):
+        with open('tienda.pickle', 'wb') as arch:
+            pickle.dump(self,arch)
 
 
-Blue_Velvet_Cupcakes = Tienda()
+try:
+    with open('tienda.pickle', 'rb') as arch:
+        Blue_Velvet_Cupcakes = pickle.load(arch)
+except FileNotFoundError:
+    Blue_Velvet_Cupcakes = Tienda()
+
 Blue_Velvet_Cupcakes.iniciar()
+Blue_Velvet_Cupcakes.guardarDatos()
