@@ -4,10 +4,7 @@ from Funciones import *  # este import nos trae la parte del codigo con todos lo
 from datetime import datetime  # la usamos para las fechas
 from time import sleep  # la usamos como "cooldown" de pantalla
 import pickle
-pedidos_file = "pedidos.csv"
-users_file = "users.txt"
-admin_file = "admin.txt"
-users_data_file = "usuarios.csv"
+
 
 
 
@@ -72,7 +69,7 @@ class Cliente(Persona):
     def __str__(self):
         return f"Cliente: {self.nombre} {self.apellido}\nDNI: {self.dni}\nEmail: {self.mail}\nDirección: {self.calle} {self.altura}\nTeléfono: {self.telefono}"
 
-    def menu(self):
+    def menu(self, tienda):
         os.system('cls' if os.name == 'nt' else 'clear')
         print("Bienvenido a la tienda de cupcakes online!")
         print("1. Ver productos")
@@ -80,25 +77,36 @@ class Cliente(Persona):
         print("3. Ver pedidos")
         print("4. Salir")
 
-
-
-
 class Admin(Persona):
     def __init__(self, nombre, apellido, username, password):
         super().__init__(nombre, apellido, username, password)
 
     def __str__(self):
-        return f"Admin: {self.nombre} {self.apellido}\nUsername: {self.username}"
+        return f"Admin: {self.nombre} {self.apellido}\nUsername: {self.nombre_usuario}"
 
-    def menu(self):
-        os.system('cls' if os.name == 'nt' else 'clear')
-        print("Bienvenido administrador!")
-        print("1. Ver productos actuales")
-        print("2. Ver estadisticas")
-        print("3. Editar productos")
-        print("4. Salir")
 
-    def
+    def menu(self, tienda):
+        while True:
+            os.system('cls' if os.name == 'nt' else 'clear')
+            print("Bienvenido administrador!")
+            print("1. Ver productos actuales")
+            print("2. Ver estadisticas")
+            print("3. Editar productos")
+            print("4. Salir")
+            opcion = "a"
+            while not verificar_rango(opcion, 4):
+                opcion = input("Elija una opcion: ")
+            match opcion:
+                case "1":
+                    tienda.productos.ver_productos()
+                case "2":
+                    pass
+                case "3":
+                    tienda.productos.modificar_producto()
+                case "4":
+                    break
+
+
 
 class Producto():
     def __init__(self):
@@ -130,7 +138,7 @@ class Producto():
     def __str__(self):
         return f"Producto\nSabor: {self.sabor}\nRelleno: {self.relleno}\nCobertura: {self.cobertura}\nSprinkle: {self.sprinkle}"
 
-    def ver_productos(self, opcion=None):
+    def ver_productos(self, opcion=None, modificar = False):
         os.system('cls' if os.name == 'nt' else 'clear')
         if opcion == None:
             opcion = input("Seleccione una opcion: \n 1.Sabores \n 2.Rellenos \n 3.Coberturas \n 4.Sprinkles\n")
@@ -138,33 +146,47 @@ class Producto():
                 opcion = input(
                     "Seleccione una opcion valida: \n 1.Sabores \n 2.Rellenos \n 3.Coberturas \n 4.Sprinkles\n")
 
-        producto = Producto()
+        producto = self
+        def mostrar(productos, tipo):
+            cont = 0
+            print(f"{tipo} disponibles:")
+            for tipo_de_parte, precio in productos.items():
+                cont += 1
+                print(f"{cont} {tipo_de_parte} - ${precio}")
+            if modificar:
+                cont += 1
+                print(f"{cont} agregar uno")
+
 
         match int(opcion):
             case 1:
-                cont = 0
-                print("Sabores disponibles:")
-                for sabor, precio in producto.sabor.items():
-                    cont += 1
-                    print(f"{cont} {sabor} - ${precio}")
+                mostrar(self.sabor, "Sabores")
+                return self.sabor
             case 2:
-                cont = 0
-                print("Rellenos disponibles:")
-                for relleno, precio in producto.relleno.items():
-                    cont += 1
-                    print(f"{cont} {relleno} - ${precio}")
+                mostrar(self.relleno, "Rellenos")
+                return self.relleno
             case 3:
-                cont = 0
-                print("Coberturas disponibles:")
-                for cobertura, precio in producto.cobertura.items():
-                    cont += 1
-                    print(f"{cont} {cobertura} - ${precio}")
+                mostrar(self.cobertura, "Coberturas")
+                return self.cobertura
             case 4:
-                print("Sprinkles disponibles:")
-                cont = 0
-                for sprinkle, precio in producto.sprinkle.items():
-                    cont += 1
-                    print(f"{cont} {sprinkle} - ${precio}")
+                mostrar(self.sprinkle, "Sprinkles")
+                return self.sprinkle
+
+    def modificar_producto(self):
+        diccionario_a_modificar = self.ver_productos(modificar=True)
+        key_a_modificar = "a" #pasamos este parametro para entrar directamente al while
+        while not verificar_rango(key_a_modificar, len(diccionario_a_modificar)+1):
+            key_a_modificar = input("Que tipo quiere modificar?")
+        try:
+            opcion_seleccionada = list(diccionario_a_modificar)[int(key_a_modificar)]
+        except IndexError:
+            opcion_seleccionada = input("Que le gustaria agregar?")
+        precio = input("Que precio le gustaria?")
+        while not es_int(precio):
+            print("Ingrese un numero por favor")
+            precio = input("Que precio le gustaria?")
+        diccionario_a_modificar[opcion_seleccionada] =  precio
+
 
 class Pedido():
     # Tiene un constructor que inicializa los atributos de un pedido
@@ -352,7 +374,7 @@ class Tienda:
             self.usuarios = dict()
             admin = Admin("Admin", "Maestro", "admin", "pass") #el usuario del admin es el mismo siempre por default
             self.usuarios["admin"] = admin
-            print(f"fSe creo el usuario Admin con los siguientes datos , {admin} ")
+            print(f"Se creo el usuario Admin con los siguientes datos , {admin} ")
 
 
     def __str__(self):
@@ -366,7 +388,7 @@ class Tienda:
         opcion = 0
 
         while inicio != True:
-            opcion = 4
+            opcion = "4"
             while not verificar_rango(opcion,3):
                 opcion = input("Seleccione una opcion:\n1.Iniciar sesion\n2.Crear cuenta\n3.Salir\n")
 
@@ -381,7 +403,7 @@ class Tienda:
                         print("Contrasena incorrecta")
                     else:
                         print("Login exitoso!")
-                        usuario_seleccionado.menu()
+                        usuario_seleccionado.menu(self)
 
                 case 2:
                     cliente_nuevo = Cliente.crear_cliente()
@@ -403,7 +425,7 @@ try:
     with open('tienda.pickle', 'rb') as arch:
         Blue_Velvet_Cupcakes = pickle.load(arch)
 except FileNotFoundError:
-    Blue_Velvet_Cupcakes = Tienda()
+    Blue_Velvet_Cupcakes = Tienda("Mi tienda", "Iguazu 123")
 
 Blue_Velvet_Cupcakes.iniciar()
 Blue_Velvet_Cupcakes.guardarDatos()
