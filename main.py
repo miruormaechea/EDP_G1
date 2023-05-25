@@ -16,7 +16,7 @@ class Persona():
         self.password = password
 
     def __str__(self):
-        return f"Persona: {self.nombre} {self.apellido} Username: {self.username}"
+        return f"Persona: {self.nombre} {self.apellido} Username: {self.nombre_usuario}"
 
 
 class Cliente(Persona):
@@ -66,6 +66,22 @@ class Cliente(Persona):
 
         return Cliente(nombre, apellido, dni, mail, calle, altura, telefono, nombre_usuario, password)
 
+    def cambiar_contrasena(self):
+        contrasena_actual = input("Ingrese su contraseña actual: ")
+        if contrasena_actual != self.password:
+            print("Contraseña incorrecta. No se puede cambiar la contraseña.")
+            return
+
+        nueva_contrasena = input("Ingrese su nueva contraseña: ")
+        confirmar_contrasena = input("Confirme su nueva contraseña: ")
+
+        if nueva_contrasena != confirmar_contrasena:
+            print("Las contraseñas no coinciden. No se puede cambiar la contraseña.")
+            return
+
+        self.password = nueva_contrasena
+        print("¡La contraseña se ha cambiado exitosamente!")
+
     def __str__(self):
         return f"Cliente: {self.nombre} {self.apellido}\nDNI: {self.dni}\nEmail: {self.mail}\nDirección: {self.calle} {self.altura}\nTeléfono: {self.telefono}"
 
@@ -75,7 +91,9 @@ class Cliente(Persona):
         print("1. Ver productos")
         print("2. Hacer pedido")
         print("3. Ver pedidos")
-        print("4. Cerrar Sesion")
+        print("4. Cambiar contraseña")
+        print("5. Cerrar Sesion")
+
 
 class Admin(Persona):
     def __init__(self, nombre, apellido, username, password):
