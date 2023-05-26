@@ -86,13 +86,28 @@ class Cliente(Persona):
         return f"Cliente: {self.nombre} {self.apellido}\nDNI: {self.dni}\nEmail: {self.mail}\nDirección: {self.calle} {self.altura}\nTeléfono: {self.telefono}"
 
     def menu(self, tienda):
-        os.system('cls' if os.name == 'nt' else 'clear')
-        print("Bienvenido a la tienda de cupcakes online!")
-        print("1. Ver productos")
-        print("2. Hacer pedido")
-        print("3. Ver pedidos")
-        print("4. Cambiar contraseña")
-        print("5. Cerrar Sesion")
+        while True:
+            os.system('cls' if os.name == 'nt' else 'clear')
+            print("Bienvenido a la tienda de cupcakes online!")
+            print("1. Ver productos")
+            print("2. Hacer pedido")
+            print("3. Ver pedidos")
+            print("4. Cambiar contraseña")
+            print("5. Cerrar Sesion")
+            opcion = "a"
+            while not verificar_rango(opcion, 5):
+                opcion = input("Elija una opcion: ")
+            match opcion:
+                case "1":
+                    tienda.productos.ver_productos()
+                case "2":
+                    nuevo_pedido = Pedido(nombre_usuario=self, productos= tienda.productos)
+                    nuevo_pedido.hacer_pedido()
+
+                case "3":
+                    tienda.productos.modificar_producto()
+                case "4":
+                    break
 
 
 class Admin(Persona):
@@ -207,23 +222,33 @@ class Producto():
 
 
 class Pedido():
-    # Tiene un constructor que inicializa los atributos de un pedido
-    # Tiene un método llamado "escribir_archivo", que escribe la información del pedido en un archivo CSV.
-    # Tiene un método llamado "str" que devuelve una cadena formateada que representa los detalles del pedido
-    def __init__(self, nombre_usuario, productos, total):
+    def __init__(self, nombre_usuario, productos:Producto):
         self.nombre_usuario = nombre_usuario
         self.productos = productos
-        self.total = total
-        self.escribir_archivo()
+        self.total = 0
 
     def __str__(self):
         return f"Pedido de {self.nombre_usuario} - Total: ${self.total} \nDetalles del pedido: {self.productos[4]} Cupcake/s Sabor: {self.productos[0]} - Relleno: {self.productos[1]} - Cobertura: {self.productos[2]} - Sprinkle: {self.productos[3]}"
 
-    def hacer_pedido(self, usuario_pedido, pedido_anterior=None):
+    @staticmethod
+    def hacer_pedido(self):
+        def seleccionar(tipo:str, categoria):
+            dict_tipo = self.productos.ver_productos(categoria)
+            n = input(
+                f"Ingrese el número de {tipo} que quiera:  ")
+            while verificar_rango(n, len(dict_tipo)) == False:
+                n = input(
+                    "Ingrese un número valido de sabor que quiera:  ")
+            return list(dict_tipo)[int(n) - 1]
+
         os.system('cls' if os.name == 'nt' else 'clear')
-        carrito = []
+        carrito = dict()
         total = 0
-        if pedido_anterior != None:
+        while True:
+            sabor_seleccionado = seleccionar("sabor",1)
+            relleno_seleccionado = seleccionar("relleno",2)
+            cobertura_seleccionada = seleccionar("cobertura",3)
+            sprinkle_seleccionada = seleccionar("sprinkle",4)
 
             cantidad = input("¿Cuantos cupcakes quiere?: ")
             validado = False
@@ -239,94 +264,32 @@ class Pedido():
                 else:
                     validado = True
 
-            total += self.sabor[pedido_anterior[0]] * int(cantidad)
-            carrito.append(pedido_anterior[0])
-            total += self.relleno[pedido_anterior[1]] * int(cantidad)
-            carrito.append(pedido_anterior[1])
-            total += self.cobertura[pedido_anterior[2]] * int(cantidad)
-            carrito.append(pedido_anterior[2])
-            total += self.sprinkle[pedido_anterior[3]] * int(cantidad)
-            carrito.append(pedido_anterior[3])
-            carrito.append(cantidad)
+            total += self.productos.sabor[sabor_seleccionado] * int(cantidad)
+            total += self.productos.relleno[relleno_seleccionado] * int(cantidad)
+            total += self.productos.cobertura[cobertura_seleccionada] * int(cantidad)
+            total += self.productos.sprinkle[sprinkle_seleccionada] * int(cantidad)
+            self.total = total
 
 
-
-        elif pedido_anterior == None:
-            while True:
-                self.ver_productos(1)
-                n_sabor = input(
-                    "Ingrese el número de sabor que quiera:  ")
-                while verificar_rango(n_sabor, 4) == False:
-                    n_sabor = input(
-                        "Ingrese un número valido de sabor que quiera:  ")
-
-                self.ver_productos(2)
-                n_relleno = input(
-                    "Ingrese el número de relleno que quiera:  ")
-                while not verificar_rango(n_relleno, 5):
-                    n_relleno = input(
-                        "Ingrese un número valido de relleno que quiera:  ")
-
-                self.ver_productos(3)
-                n_cobertura = input(
-                    "Ingrese el número de cobertura que quiera:  ")
-                while verificar_rango(n_cobertura, 3) == False:
-                    n_cobertura = (input(
-                        "Ingrese un número valido de cobertura que quiera:  "))
-
-                self.ver_productos(4)
-                n_sprinkle = input(
-                    "Ingrese el número de sprinkle que quiera:  ")
-                while verificar_rango(n_sprinkle, 3) == False:
-                    n_sprinkle = input(
-                        "Ingrese un número valido de sprinkle que quiera:  ")
-
-                cantidad = input("¿Cuantos cupcakes quiere?: ")
-                validado = False
-                while validado == False:
-                    while not es_int(cantidad):
-                        cantidad = input("Ingrese una cantidad valida de cupcakes: ")
-                    if int(cantidad) > 100:
-                        print("El numero maximo de cupcakes por pedido es 100")
-                        cantidad = "not int"
-                    elif int(cantidad) < 1:
-                        print("El numero minimo de cupcakes por pedido es 1")
-                        cantidad = "not int"
-                    else:
-                        validado = True
-
-                total += Producto.sabor[list(Producto.sabor)[int(n_sabor) - 1]] * int(cantidad)
-                carrito.append(list(Producto.sabor)[int(n_sabor) - 1])
-                total += Producto.relleno[list(Producto.relleno)[int(n_relleno) - 1]] * int(cantidad)
-                carrito.append(list(Producto.relleno)[int(n_relleno) - 1])
-                total += Producto.cobertura[list(Producto.cobertura)[int(n_cobertura) - 1]] * int(cantidad)
-                carrito.append(list(Producto.cobertura)[int(n_cobertura) - 1])
-                total += Producto.sprinkle[list(Producto.sprinkle)[int(n_sprinkle) - 1]] * int(cantidad)
-                carrito.append(list(Producto.sprinkle)[int(n_sprinkle) - 1])
-                carrito.append(cantidad)
-                break
+            carrito["sabor"] = (sabor_seleccionado, self.productos.sabor[sabor_seleccionado])
+            carrito["relleno"] = (relleno_seleccionado, self.productos.relleno[relleno_seleccionado])
+            carrito["cobertura"] = (cobertura_seleccionada, self.productos.cobertura[cobertura_seleccionada])
+            carrito["sprinkle"] = (sprinkle_seleccionada, self.productos.sprinkle[sprinkle_seleccionada])
+            break
 
         print(f"Su pedido ha sido registrado con éxito. Total a pagar: ${total}")
-        confirmacion = input("Ingrese 1 para confirmar su pedido, cualquier otra tecla para cancelar: ")
-        if confirmacion != "1":
-            print("Su pedido ha sido cancelado.")
-            input("Presione Enter para volver al menú principal")
-        elif confirmacion == "1":
-            pedido = Pedido(usuario_pedido, carrito, total)
-            Tienda.lista_pedidos.append(pedido)
-            print(f"Su pedido ha sido confirmado")
-            input("Presione Enter para volver al menú principal")
+
 
     def escribir_archivo(self):
         header = ["Fecha", "Hora", "Usuario", "Sabor", "Relleno", "Cobertura", "Sprinkle", "Cantidad de Cupcakes",
                   "Total"]
 
-        if not os.path.isfile(pedidos_file) or os.path.getsize(pedidos_file) == 0:
-            with open(pedidos_file, "w", newline='') as f:
+        if not os.path.isfile(facturas_file) or os.path.getsize(facturas_file) == 0:
+            with open(facturas_file, "w", newline='') as f:
                 writer = csv.writer(f)
                 writer.writerow(header)
 
-        with open(pedidos_file, mode='a', newline='') as csv_file:
+        with open(facturas_file, mode='a', newline='') as csv_file:
             writer = csv.writer(csv_file)
             now = datetime.now()
             if csv_file.tell() == 0:  # Si el archivo esta vacio, entonces se escriben los headers
