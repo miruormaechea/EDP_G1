@@ -4,6 +4,7 @@ from Funciones import *  # este import nos trae la parte del codigo con todos lo
 from datetime import datetime  # la usamos para las fechas
 from time import sleep  # la usamos como "cooldown" de pantalla
 import pickle
+import re
 
 
 
@@ -19,6 +20,7 @@ class Persona():
         return f"Persona: {self.nombre} {self.apellido} Username: {self.nombre_usuario}"
 
 
+
 class Cliente(Persona):
     def __init__(self, nombre, apellido, dni, mail, calle, altura, telefono, nombre_usuario, password):
         super().__init__(nombre, apellido, nombre_usuario, password)
@@ -29,6 +31,7 @@ class Cliente(Persona):
         self.telefono = telefono
         self.nombre_usuario = nombre_usuario
         self.password = password
+        self.pedidos = []
 
     @staticmethod
     def crear_cliente():
@@ -85,6 +88,14 @@ class Cliente(Persona):
     def __str__(self):
         return f"Cliente: {self.nombre} {self.apellido}\nDNI: {self.dni}\nEmail: {self.mail}\nDirección: {self.calle} {self.altura}\nTeléfono: {self.telefono}"
 
+    def factura(self,pedido):
+        timestamp = re.sub(r'[^a-zA-Z0-9]', '_', str(datetime.now()))
+        archivo_factura = f"C:/Users/ormae/OneDrive/Documents/factura_{self.nombre}_{timestamp}.txt"
+        with open(archivo_factura, "w") as archivo:
+            # Write data to the file
+            archivo.write(str(pedido))
+
+    #esto le da la opcion al cliente de generar un txt
     def menu(self, tienda):
         while True:
             os.system('cls' if os.name == 'nt' else 'clear')
@@ -103,10 +114,48 @@ class Cliente(Persona):
                 case "2":
                     nuevo_pedido = Pedido(nombre_usuario=self, productos= tienda.productos)
                     nuevo_pedido.hacer_pedido()
+                    opcion = input("Presione 1 si quiere confirmar su pedido, cualquier otra tecla en caso contrario")
+                    if opcion == "1":
+                        self.pedidos.append(nuevo_pedido)
+                        print("Su pedido se ha confirmado con exito!")
+                        Tienda.lista_pedidos.append(nuevo_pedido)
+                        generar_factura = input("Presione 1 si quiere generar una factura")
+                        if generar_factura == "1":
+                          self.factura(nuevo_pedido)
+                    else:
+                        pass
 
                 case "3":
-                    tienda.productos.modificar_producto()
+                    for i,pedido in enumerate(self.pedidos):
+                        print(i+1,pedido)
+                        input("Presione enter para continuar")
+
+
+
                 case "4":
+                    self.cambiar_contrasena()
+                case "5":
+                    break
+
+class Invitado(Cliente): #ya esta creada la clase, falta la implementacion
+    def __init__(self, nombre, apellido, dni, mail, calle, altura, telefono, nombre_usuario):
+        super().__init__(nombre, apellido, dni, mail, calle, altura, telefono, nombre_usuario, None)
+        self.login_count = 0
+
+    def menu(self, tienda):
+        self.login_count += 1  # Increment the login count
+        while True:
+            os.system('cls' if os.name == 'nt' else 'clear')
+            print("Bienvenido a la tienda de cupcakes online!")
+            print("1. Ver productos")
+            print("2. Salir")
+            opcion = "a"
+            while not verificar_rango(opcion, 2):
+                opcion = input("Elija una opción: ")
+            match opcion:
+                case "1":
+                    tienda.productos.ver_productos()
+                case "2":
                     break
 
 
@@ -218,7 +267,7 @@ class Producto():
         while not es_int(precio):
             print("Ingrese un numero por favor")
             precio = input("Que precio le gustaria?")
-        diccionario_a_modificar[opcion_seleccionada] =  precio
+        diccionario_a_modificar[opcion_seleccionada] = int(precio)
 
 
 class Pedido():
@@ -226,11 +275,12 @@ class Pedido():
         self.nombre_usuario = nombre_usuario
         self.productos = productos
         self.total = 0
+        self.carrito = dict()
+        self.fecha = datetime.now()
 
     def __str__(self):
-        return f"Pedido de {self.nombre_usuario} - Total: ${self.total} \nDetalles del pedido: {self.productos[4]} Cupcake/s Sabor: {self.productos[0]} - Relleno: {self.productos[1]} - Cobertura: {self.productos[2]} - Sprinkle: {self.productos[3]}"
+        return f"Pedido de {self.nombre_usuario} \nTotal: ${self.total} \nDetalles del pedido: Cupcake/s Sabor: {self.carrito['sabor'][0]} - Relleno: {self.carrito['relleno'][0]} - Cobertura: {self.carrito['cobertura'][0]} - Sprinkle: {self.carrito['sprinkle'][0]} "
 
-    @staticmethod
     def hacer_pedido(self):
         def seleccionar(tipo:str, categoria):
             dict_tipo = self.productos.ver_productos(categoria)
@@ -242,7 +292,6 @@ class Pedido():
             return list(dict_tipo)[int(n) - 1]
 
         os.system('cls' if os.name == 'nt' else 'clear')
-        carrito = dict()
         total = 0
         while True:
             sabor_seleccionado = seleccionar("sabor",1)
@@ -271,78 +320,13 @@ class Pedido():
             self.total = total
 
 
-            carrito["sabor"] = (sabor_seleccionado, self.productos.sabor[sabor_seleccionado])
-            carrito["relleno"] = (relleno_seleccionado, self.productos.relleno[relleno_seleccionado])
-            carrito["cobertura"] = (cobertura_seleccionada, self.productos.cobertura[cobertura_seleccionada])
-            carrito["sprinkle"] = (sprinkle_seleccionada, self.productos.sprinkle[sprinkle_seleccionada])
+            self.carrito["sabor"] = (sabor_seleccionado, self.productos.sabor[sabor_seleccionado])
+            self.carrito["relleno"] = (relleno_seleccionado, self.productos.relleno[relleno_seleccionado])
+            self.carrito["cobertura"] = (cobertura_seleccionada, self.productos.cobertura[cobertura_seleccionada])
+            self.carrito["sprinkle"] = (sprinkle_seleccionada, self.productos.sprinkle[sprinkle_seleccionada])
             break
 
         print(f"Su pedido ha sido registrado con éxito. Total a pagar: ${total}")
-
-
-    def escribir_archivo(self):
-        header = ["Fecha", "Hora", "Usuario", "Sabor", "Relleno", "Cobertura", "Sprinkle", "Cantidad de Cupcakes",
-                  "Total"]
-
-        if not os.path.isfile(facturas_file) or os.path.getsize(facturas_file) == 0:
-            with open(facturas_file, "w", newline='') as f:
-                writer = csv.writer(f)
-                writer.writerow(header)
-
-        with open(facturas_file, mode='a', newline='') as csv_file:
-            writer = csv.writer(csv_file)
-            now = datetime.now()
-            if csv_file.tell() == 0:  # Si el archivo esta vacio, entonces se escriben los headers
-                writer.writerow(header)
-            writer.writerow(
-                [now.strftime("%Y-%m-%d"), now.strftime("%H:%M"), self.nombre_usuario,
-                 self.productos[0], self.productos[1], self.productos[2], self.productos[3], self.productos[4],
-                 self.total])
-
-    def ver_pedidos(self, usuario):
-        header = ["Fecha", "Hora", "Usuario", "Sabor", "Relleno", "Cobertura", "Sprinkle",
-                  "Cantidad de Cupcakes", "Total"]
-
-
-        try:
-            with open(pedidos_file, mode='r') as csv_file:
-                existe = False
-                reader = csv.DictReader(csv_file, fieldnames=header)
-                pedidos_usuario = []
-                i = 0
-
-                for row in reader:
-                    if row.get("Usuario") == usuario:
-                        existe = True
-                        i += 1
-                        print(
-                            f'{i} Fecha: {row.get("Fecha")} - Total: ${row.get("Total")} - '
-                            f'Cantidad de cupcakes: {row.get("Cantidad de Cupcakes")} - Sabor: {row.get("Sabor")} '
-                            f'- Relleno: {row.get("Relleno")}  - Cobertura: {row.get("Cobertura")} - Sprinkle: {row.get("Sprinkle")}\n ')
-                        pedidos_usuario.append(row)
-
-                if existe == False:
-                    print(f'Disculpa {usuario} no realizaste ningun pedido todavia')
-                    sleep(7)
-                else:
-                    pedido = input("Ingrese el numero de pedido que quiere repetir, en caso de que no quiera repetir " \
-                                   "presione cualquier otro numero: ")
-                    while not es_int(pedido):
-                        pedido = input("Ingrese un numero: ")
-                    for i, row in enumerate(pedidos_usuario):
-                        if i == int(pedido) - 1:
-                            existe = True
-                            datos_pedido = [row.get("Sabor"), row.get("Relleno"), row.get("Cobertura"),
-                                            row.get("Sprinkle")]
-                            # aca usamos el get que recomendo Ian
-                            self.hacer_pedido(usuario, datos_pedido)
-                    if existe == False:
-                        print("Volviendo al menu principal")
-                        sleep(10)
-
-        except FileNotFoundError:
-            print(f'Error: el archivo {pedidos_file} no se encuentra')
-
 
 class Tienda:
 
@@ -369,8 +353,8 @@ class Tienda:
         opcion = 0
 
         while inicio != True:
-            opcion = "4"
-            while not verificar_rango(opcion,3):
+            opcion = "a"
+            while not verificar_rango(opcion,4):
                 opcion = input("Seleccione una opcion:\n1.Iniciar sesion\n2.Crear cuenta\n3.Salir\n")
 
             match int(opcion):
