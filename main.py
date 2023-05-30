@@ -2,11 +2,10 @@ import os  # esta libreria es la que usamos para limpiar la pantalla
 import csv  # esta libreria es para las hojas de calculo
 from Funciones import *  # este import nos trae la parte del codigo con todos los validadores
 from datetime import datetime  # la usamos para las fechas
+import matplotlib.pyplot as plt
 from time import sleep  # la usamos como "cooldown" de pantalla
 import pickle
 import re
-
-
 
 
 class Persona():
@@ -18,7 +17,6 @@ class Persona():
 
     def __str__(self):
         return f"Persona: {self.nombre} {self.apellido} Username: {self.nombre_usuario}"
-
 
 
 class Cliente(Persona):
@@ -34,7 +32,7 @@ class Cliente(Persona):
         self.pedidos = []
 
     @staticmethod
-    def crear_cliente():
+    def crear_cliente(es_invitado=False):
         nombre = input('Ingrese su nombre: ')
         while verNombre(nombre) == False:
             nombre = input("Por favor, ingrese un nombre válido: ")
@@ -64,10 +62,30 @@ class Cliente(Persona):
             telefono = input("Ingrese un teléfono valido: ")
 
         nombre_usuario = input('Ingrese un nombre de usuario: ')
-
-        password = input('Ingrese una contraseña: ')
+        password = None
+        if not es_invitado:
+            password = input('Ingrese una contraseña: ')
 
         return Cliente(nombre, apellido, dni, mail, calle, altura, telefono, nombre_usuario, password)
+
+    def repetir_pedido(self,n,tienda):
+        pedido_anterior = self.pedidos[n-1]
+        pedido = Pedido(nombre_usuario=self,productos=tienda.productos)
+        pedido.hacer_pedido(pedido_anterior)
+        self.confirmar_pedido(pedido,tienda)
+
+    def confirmar_pedido(self, pedido, tienda):
+        opcion = input("Presione 1 si quiere confirmar su pedido, cualquier otra tecla en caso contrario")
+        if opcion == "1":
+            self.pedidos.append(pedido)
+            print("Su pedido se ha confirmado con exito!")
+            tienda.lista_pedidos.append(pedido)
+            generar_factura = input("Presione 1 si quiere generar una factura")
+            if generar_factura == "1":
+                # esto le da la opcion al cliente de generar un txt
+                self.factura(pedido)
+        else:
+            pass
 
     def cambiar_contrasena(self):
         contrasena_actual = input("Ingrese su contraseña actual: ")
@@ -88,14 +106,13 @@ class Cliente(Persona):
     def __str__(self):
         return f"Cliente: {self.nombre} {self.apellido}\nDNI: {self.dni}\nEmail: {self.mail}\nDirección: {self.calle} {self.altura}\nTeléfono: {self.telefono}"
 
-    def factura(self,pedido):
-        timestamp = re.sub(r'[^a-zA-Z0-9]', '_', str(datetime.now()))
+    def factura(self, pedido):
+        timestamp = datetime.now().strftime("%Y-%m-%d-%H-%M-%S")
         archivo_factura = f"C:/Users/ormae/OneDrive/Documents/factura_{self.nombre}_{timestamp}.txt"
         with open(archivo_factura, "w") as archivo:
-            # Write data to the file
-            archivo.write(str(pedido))
+            # escribe la info en el archivo
+            archivo.write(str(pedido) + "Fecha:" + timestamp)
 
-    #esto le da la opcion al cliente de generar un txt
     def menu(self, tienda):
         while True:
             os.system('cls' if os.name == 'nt' else 'clear')
@@ -112,24 +129,20 @@ class Cliente(Persona):
                 case "1":
                     tienda.productos.ver_productos()
                 case "2":
-                    nuevo_pedido = Pedido(nombre_usuario=self, productos= tienda.productos)
+                    nuevo_pedido = Pedido(nombre_usuario=self, productos=tienda.productos)
                     nuevo_pedido.hacer_pedido()
-                    opcion = input("Presione 1 si quiere confirmar su pedido, cualquier otra tecla en caso contrario")
-                    if opcion == "1":
-                        self.pedidos.append(nuevo_pedido)
-                        print("Su pedido se ha confirmado con exito!")
-                        Tienda.lista_pedidos.append(nuevo_pedido)
-                        generar_factura = input("Presione 1 si quiere generar una factura")
-                        if generar_factura == "1":
-                          self.factura(nuevo_pedido)
-                    else:
-                        pass
+                    self.confirmar_pedido(nuevo_pedido, tienda)
+
 
                 case "3":
-                    for i,pedido in enumerate(self.pedidos):
-                        print(i+1,pedido)
-                        input("Presione enter para continuar")
+                    for i, pedido in enumerate(self.pedidos):
+                        print(i + 1, pedido)
+                    n_pedido = input("Si desea repetir un pedido, ingrese el numero del pedido que desea repetir\n "
+                          "Cualquier otra tecla caso contrario")
+                    if verificar_rango(n_pedido, len(self.pedidos)):
+                        self.repetir_pedido(int(n_pedido),tienda)
 
+                    input("Presione enter para continuar")
 
 
                 case "4":
@@ -137,13 +150,20 @@ class Cliente(Persona):
                 case "5":
                     break
 
-class Invitado(Cliente): #ya esta creada la clase, falta la implementacion
-    def __init__(self, nombre, apellido, dni, mail, calle, altura, telefono, nombre_usuario):
-        super().__init__(nombre, apellido, dni, mail, calle, altura, telefono, nombre_usuario, None)
+
+class Invitado(Cliente):  # ya esta creada la clase, falta la implementacion
+    def __init__(self, usuario: Cliente):
+        super().__init__(usuario.nombre, usuario.apellido, usuario.dni, usuario.mail, usuario.calle, usuario.altura,
+                         usuario.telefono, usuario.nombre_usuario, None)
         self.login_count = 0
 
+    @staticmethod
+    def crear_invitado():
+        usuario = Cliente.crear_cliente(es_invitado=True)
+        return Invitado(usuario)
+
     def menu(self, tienda):
-        self.login_count += 1  # Increment the login count
+        self.login_count += 1  # contar los login
         while True:
             os.system('cls' if os.name == 'nt' else 'clear')
             print("Bienvenido a la tienda de cupcakes online!")
@@ -166,7 +186,6 @@ class Admin(Persona):
     def __str__(self):
         return f"Admin: {self.nombre} {self.apellido}\nUsername: {self.nombre_usuario}"
 
-
     def menu(self, tienda):
         while True:
             os.system('cls' if os.name == 'nt' else 'clear')
@@ -182,12 +201,22 @@ class Admin(Persona):
                 case "1":
                     tienda.productos.ver_productos()
                 case "2":
-                    pass
+                    print(tienda.pedidos)
+                   # plt.plot(fechas, montos)
+                   # plt.xlabel("Fecha")
+                   # plt.ylabel("Monto")
+                   # plt.title(f"Pedidos de {usuario}")
+                   # plt.show(block=False)
+
+                    # pausamos por unos segundos antes de cerrar
+
+                   # plt.pause(5)
+                    #plt.close()
+
                 case "3":
                     tienda.productos.modificar_producto()
                 case "4":
                     break
-
 
 
 class Producto():
@@ -220,7 +249,7 @@ class Producto():
     def __str__(self):
         return f"Producto\nSabor: {self.sabor}\nRelleno: {self.relleno}\nCobertura: {self.cobertura}\nSprinkle: {self.sprinkle}"
 
-    def ver_productos(self, opcion=None, modificar = False):
+    def ver_productos(self, opcion=None, modificar=False):
         os.system('cls' if os.name == 'nt' else 'clear')
         if opcion == None:
             opcion = input("Seleccione una opcion: \n 1.Sabores \n 2.Rellenos \n 3.Coberturas \n 4.Sprinkles\n")
@@ -229,6 +258,7 @@ class Producto():
                     "Seleccione una opcion valida: \n 1.Sabores \n 2.Rellenos \n 3.Coberturas \n 4.Sprinkles\n")
 
         producto = self
+
         def mostrar(productos, tipo):
             cont = 0
             print(f"{tipo} disponibles:")
@@ -238,7 +268,6 @@ class Producto():
             if modificar:
                 cont += 1
                 print(f"{cont} agregar uno")
-
 
         match int(opcion):
             case 1:
@@ -256,11 +285,11 @@ class Producto():
 
     def modificar_producto(self):
         diccionario_a_modificar = self.ver_productos(modificar=True)
-        key_a_modificar = "a" #pasamos este parametro para entrar directamente al while
-        while not verificar_rango(key_a_modificar, len(diccionario_a_modificar)+1):
+        key_a_modificar = "a"  # pasamos este parametro para entrar directamente al while
+        while not verificar_rango(key_a_modificar, len(diccionario_a_modificar) + 1):
             key_a_modificar = input("Que tipo quiere modificar?")
         try:
-            opcion_seleccionada = list(diccionario_a_modificar)[int(key_a_modificar)-1]
+            opcion_seleccionada = list(diccionario_a_modificar)[int(key_a_modificar) - 1]
         except IndexError:
             opcion_seleccionada = input("Que le gustaria agregar?")
         precio = input("Que precio le gustaria?")
@@ -271,7 +300,7 @@ class Producto():
 
 
 class Pedido():
-    def __init__(self, nombre_usuario, productos:Producto):
+    def __init__(self, nombre_usuario, productos: Producto):
         self.nombre_usuario = nombre_usuario
         self.productos = productos
         self.total = 0
@@ -279,10 +308,10 @@ class Pedido():
         self.fecha = datetime.now()
 
     def __str__(self):
-        return f"Pedido de {self.nombre_usuario} \nTotal: ${self.total} \nDetalles del pedido: Cupcake/s Sabor: {self.carrito['sabor'][0]} - Relleno: {self.carrito['relleno'][0]} - Cobertura: {self.carrito['cobertura'][0]} - Sprinkle: {self.carrito['sprinkle'][0]} "
+        return f"Pedido de {self.nombre_usuario.nombre} \nTotal: ${self.total} \nDetalles del pedido: Cupcake/s Sabor: {self.carrito['sabor'][0]} - Relleno: {self.carrito['relleno'][0]} - Cobertura: {self.carrito['cobertura'][0]} - Sprinkle: {self.carrito['sprinkle'][0]} "
 
-    def hacer_pedido(self):
-        def seleccionar(tipo:str, categoria):
+    def hacer_pedido(self, pedido_anterior=None):
+        def seleccionar(tipo: str, categoria):
             dict_tipo = self.productos.ver_productos(categoria)
             n = input(
                 f"Ingrese el número de {tipo} que quiera:  ")
@@ -294,14 +323,15 @@ class Pedido():
         os.system('cls' if os.name == 'nt' else 'clear')
         total = 0
         while True:
-            sabor_seleccionado = seleccionar("sabor",1)
-            relleno_seleccionado = seleccionar("relleno",2)
-            cobertura_seleccionada = seleccionar("cobertura",3)
-            sprinkle_seleccionada = seleccionar("sprinkle",4)
+            sabor_seleccionado = seleccionar("sabor", 1) if not pedido_anterior else pedido_anterior.carrito.get("sabor")[0]
+            relleno_seleccionado = seleccionar("relleno", 2)if not pedido_anterior else pedido_anterior.carrito.get("relleno")[0]
+            cobertura_seleccionada = seleccionar("cobertura", 3) if not pedido_anterior else pedido_anterior.carrito.get("cobertura")[0]
+            sprinkle_seleccionada = seleccionar("sprinkle", 4)if not pedido_anterior else pedido_anterior.carrito.get("sprinkle")[0]
+
 
             cantidad = input("¿Cuantos cupcakes quiere?: ")
             validado = False
-            while validado == False:
+            while not validado:
                 while not es_int(cantidad):
                     cantidad = input("Ingrese una cantidad valida de cupcakes: ")
                 if int(cantidad) > 100:
@@ -312,13 +342,11 @@ class Pedido():
                     cantidad = "not int"
                 else:
                     validado = True
-
             total += self.productos.sabor[sabor_seleccionado] * int(cantidad)
             total += self.productos.relleno[relleno_seleccionado] * int(cantidad)
             total += self.productos.cobertura[cobertura_seleccionada] * int(cantidad)
             total += self.productos.sprinkle[sprinkle_seleccionada] * int(cantidad)
             self.total = total
-
 
             self.carrito["sabor"] = (sabor_seleccionado, self.productos.sabor[sabor_seleccionado])
             self.carrito["relleno"] = (relleno_seleccionado, self.productos.relleno[relleno_seleccionado])
@@ -328,19 +356,21 @@ class Pedido():
 
         print(f"Su pedido ha sido registrado con éxito. Total a pagar: ${total}")
 
+
 class Tienda:
 
-    def __init__(self,nombre, direccion, usuarios:dict = None):
+    def __init__(self, nombre, direccion, usuarios: dict = None):
         self.nombre = nombre
         self.direccion = direccion
         self.usuarios = usuarios
         self.productos = Producto()
+        self.pedidos = []
+
         if usuarios is None:
             self.usuarios = dict()
-            admin = Admin("Admin", "Maestro", "admin", "pass") #el usuario del admin es el mismo siempre por default
+            admin = Admin("Admin", "Maestro", "admin", "pass")  # el usuario del admin es el mismo siempre por default
             self.usuarios["admin"] = admin
             print(f"Se creo el usuario Admin con los siguientes datos , {admin} ")
-
 
     def __str__(self):
         return f"Tienda: {self}"
@@ -354,21 +384,29 @@ class Tienda:
 
         while inicio != True:
             opcion = "a"
-            while not verificar_rango(opcion,4):
-                opcion = input("Seleccione una opcion:\n1.Iniciar sesion\n2.Crear cuenta\n3.Salir\n")
+            while not verificar_rango(opcion, 4):
+                opcion = input(
+                    "Seleccione una opcion:\n1.Iniciar sesion\n2.Crear cuenta\n3.Crear cuenta invitado\n4.Salir\n")
 
             match int(opcion):
                 case 1:
                     usuario_login = input("Ingrese su Usuario: ")
-                    password_login = input("Ingrese su contrasena: ")
                     usuario_seleccionado = self.usuarios.get(usuario_login)
-                    if usuario_seleccionado is None:
-                        print("El Usuario no existe")
-                    elif usuario_seleccionado.password != password_login:
-                        print("Contrasena incorrecta")
+                    if type(usuario_seleccionado) == Invitado:
+                        if usuario_seleccionado is None:
+                            print("El Usuario no existe")
+                        else:
+                            print("Login exitoso!")
+                            usuario_seleccionado.menu(self)
                     else:
-                        print("Login exitoso!")
-                        usuario_seleccionado.menu(self)
+                        password_login = input("Ingrese su contrasena: ")
+                        if usuario_seleccionado is None:
+                            print("El Usuario no existe")
+                        elif usuario_seleccionado.password != password_login:
+                            print("Contrasena incorrecta")
+                        else:
+                            print("Login exitoso!")
+                            usuario_seleccionado.menu(self)
 
                 case 2:
                     cliente_nuevo = Cliente.crear_cliente()
@@ -378,12 +416,18 @@ class Tienda:
                         print("Ya existe ese Usuario")
 
                 case 3:
+                    invitado_nuevo = Invitado.crear_invitado()
+                    if self.usuarios.get(invitado_nuevo.nombre_usuario) is None:
+                        self.usuarios[invitado_nuevo.nombre_usuario] = invitado_nuevo
+                    else:
+                        print("Ya existe ese Usuario")
+                case 4:
                     print("Gracias por usar nuestro programa!")
                     break
 
     def guardarDatos(self):
         with open('tienda.pickle', 'wb') as arch:
-            pickle.dump(self,arch)
+            pickle.dump(self, arch)
 
 
 try:

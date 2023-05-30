@@ -88,3 +88,4 @@ def verificar_rango(valor, n):
         return False
 
 
+
