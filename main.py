@@ -1,6 +1,6 @@
 import os  # esta libreria es la que usamos para limpiar la pantalla
 import csv  # esta libreria es para las hojas de calculo
-from Funciones import *  # este import nos trae la parte del codigo con todos los validadores
+from Validadores import *  # este import nos trae la parte del codigo con todos los validadores
 from datetime import datetime  # la usamos para las fechas
 import matplotlib.pyplot as plt
 from time import sleep  # la usamos como "cooldown" de pantalla
@@ -8,7 +8,7 @@ import pickle
 import re
 
 
-class Persona():
+class Persona:
     def __init__(self, nombre, apellido, nombre_usuario, password):
         self.nombre = nombre
         self.apellido = apellido
@@ -234,7 +234,49 @@ class Admin(Persona):
             plt.show() 
 
 
-class Producto():
+
+    def ver_estadisticas(self, tienda):
+        opcion = input('Seleccione una opción:\n1. Cantidad de pedidos por sabor\n2. Cantidad de pedidos por cobertura ')
+        while not es_int(opcion) or not verificar_rango(opcion, 2):
+            opcion = input('Seleccione una opción válida: ')
+
+        match int(opcion):
+            case 1:
+                contador_sabores = {}
+                sabores = tienda.productos.sabor.keys()
+                for sabor in sabores:
+                    contador_sabores[sabor] = 0
+                pedido: Pedido
+                for pedido in tienda.pedidos:
+                    sabor_pedido = pedido.carrito.get('sabor')[0]
+                    contador_sabores[sabor_pedido] += 1
+                sabores_pedidos = list(contador_sabores.keys())
+                cantidad = list(contador_sabores.values())
+                plt.title(label="Grafico sabor por pedidos", fontsize=20, color="black")
+                plt.xlabel("Sabor")
+                plt.ylabel('Cantidad de pedidos')
+                plt.bar(sabores_pedidos, cantidad, color="green", width=0.5)
+                plt.show()
+            case 2:
+                contador_coberturas = {}
+                coberturas = tienda.productos.cobertura.keys()
+                for cobertura in coberturas:
+                    contador_coberturas[cobertura] = 0
+                pedido: Pedido
+                for pedido in tienda.pedidos:
+                    cobertura_pedida = pedido.carrito.get('cobertura')[0]
+                    contador_coberturas[cobertura_pedida] += 1
+                sabores_pedidos = list(contador_coberturas.keys())
+                cantidad = list(contador_coberturas.values())
+                plt.title(label="Grafico coberturas por pedido", fontsize=20, color="black")
+                plt.xlabel("Cobertura")
+                plt.ylabel('Cantidad de pedidos')
+                plt.bar(sabores_pedidos, cantidad, color="green", width=0.5)
+                plt.show()
+
+
+
+class Producto:
     def __init__(self):
         # aca los guardo como diccionario
         self.sabor = {
@@ -385,7 +427,8 @@ class Tienda:
             self.usuarios = dict()
             admin = Admin("Admin", "Maestro", "admin", "pass")  # el usuario del admin es el mismo siempre por default
             self.usuarios["admin"] = admin
-            print(f"Se creo el usuario Admin con los siguientes datos , {admin} ")
+            print(f"Se creo el usuario Admin con los siguientes datos"
+                  f"\n Usuario: {admin.nombre_usuario} \nContrasena: {admin.password} ")
 
     def __str__(self):
         return f"Tienda: {self}"

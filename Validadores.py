@@ -2,6 +2,11 @@ import string
 
 
 def solo_letras(str):
+    '''
+    :param str:
+    :return:
+    validador de que el parametro contenga integramente letrras
+    '''
     lista=list(char in string.ascii_letters  for char in str)
     if False in lista:
         return False
