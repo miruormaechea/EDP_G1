@@ -79,7 +79,7 @@ class Cliente(Persona):
         if opcion == "1":
             self.pedidos.append(pedido)
             print("Su pedido se ha confirmado con exito!")
-            tienda.lista_pedidos.append(pedido)
+            tienda.pedidos.append(pedido)
             generar_factura = input("Presione 1 si quiere generar una factura")
             if generar_factura == "1":
                 # esto le da la opcion al cliente de generar un txt
@@ -188,7 +188,7 @@ class Admin(Persona):
 
     def menu(self, tienda):
         while True:
-            os.system('cls' if os.name == 'nt' else 'clear')
+            #os.system('cls' if os.name == 'nt' else 'clear')
             print("Bienvenido administrador!")
             print("1. Ver productos actuales")
             print("2. Ver estadisticas")
@@ -201,22 +201,37 @@ class Admin(Persona):
                 case "1":
                     tienda.productos.ver_productos()
                 case "2":
-                    print(tienda.pedidos)
-                   # plt.plot(fechas, montos)
-                   # plt.xlabel("Fecha")
-                   # plt.ylabel("Monto")
-                   # plt.title(f"Pedidos de {usuario}")
-                   # plt.show(block=False)
-
-                    # pausamos por unos segundos antes de cerrar
-
-                   # plt.pause(5)
-                    #plt.close()
-
+                    self.ver_estadisticas(tienda)
+                    pass
                 case "3":
                     tienda.productos.modificar_producto()
                 case "4":
                     break
+
+    def ver_estadisticas(self,tienda):
+        print('1. Sabores más pedidos')
+        print('2. Usuario que más gastó')    
+        opcion=input('Selccione una opción: ')
+        
+        while verificar_rango(opcion,4)==False:
+            opcion=int(input('Selccione una opción válida: '))
+        if opcion == "1":
+            contador_sabores={}
+            sabores=tienda.productos.sabor.keys()
+            for sabor in sabores:
+                contador_sabores[sabor]=0
+            pedido:Pedido
+            for pedido in tienda.pedidos:
+                sabor_pedido=pedido.carrito.get('sabor')[0]
+                contador_sabores[sabor_pedido]+=1
+
+            sabores_pedidos=list(contador_sabores.keys())
+            cantidad = list(contador_sabores.values())
+            plt.title(label="Grafico pedidos por sabor", fontsize=20, color="blue")
+            plt.xlabel("Sabor")
+            plt.ylabel('Cantidad de pedidos')
+            plt.bar(sabores_pedidos, cantidad, color="green",width=0.5)
+            plt.show() 
 
 
 class Producto():
