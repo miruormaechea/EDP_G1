@@ -1,6 +1,5 @@
 from Validadores import *
 class Producto:
-
     def __init__(self):
         # aca los guardo como diccionario
         self.sabor = {

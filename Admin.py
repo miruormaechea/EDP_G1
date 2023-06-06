@@ -1,7 +1,7 @@
 from Persona import *
 import matplotlib.pyplot as plt
 from Validadores import *
-from Pedidos import *
+from Pedido import *
 class Admin(Persona):
     def __init__(self, nombre, apellido,dni, mail, calle, altura, telefono, nombre_usuario, password):
         super().__init__(nombre, apellido, dni, mail, calle, altura, telefono)
@@ -10,7 +10,8 @@ class Admin(Persona):
     def __str__(self):
         return f"Admin: {self.nombre} {self.apellido}\nUsername: {self.nombre_usuario}"
 
-    def crear_admin(self):
+    @staticmethod
+    def crear_admin():
         nombre = input('Ingrese su nombre: ')
         while verNombre(nombre) == False:
             nombre = input("Por favor, ingrese un nombre válido: ")

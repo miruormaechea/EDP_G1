@@ -79,7 +79,7 @@ class Tienda:
             print("2. Hacer pedido")
             print("3. Ver pedidos")
             print("4. Cambiar contraseña")
-            print("5. Cambiar informaciond de usuario")
+            print("5. Cambiar informacion de usuario")
             print("6. Cerrar Sesion")
             opcion = "a"
             while not verificar_rango(opcion, 6):
@@ -142,6 +142,12 @@ class Tienda:
                 case "3":
                     self.productos.modificar_producto()
                 case "4":
-                    admin.crear_admin()
+                    admin_nuevo = admin.crear_admin()
+                    if self.usuarios.get(admin_nuevo.nombre_usuario) is None:
+                        self.usuarios[admin_nuevo.nombre_usuario] = admin_nuevo
+                    else:
+                        print("Ya existe ese Admin")
+
+
                 case "5":
                     break
