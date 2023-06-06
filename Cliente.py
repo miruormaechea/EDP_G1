@@ -1,15 +1,66 @@
-from Validadores import *
 from Persona import *
 from Pedido import *
+
+
 class Cliente(Persona):
+    """
+    Clase que representa a un cliente de la tienda.
+
+    Atributos:
+    - nombre: El nombre del cliente.
+    - apellido: El apellido del cliente.
+    - dni: El DNI del cliente.
+    - mail: El correo electrónico del cliente.
+    - calle: La calle de residencia del cliente.
+    - altura: La altura de residencia del cliente.
+    - telefono: El número de teléfono del cliente.
+    - nombre_usuario: El nombre de usuario del cliente.
+    - password: La contraseña del cliente.
+    - pedidos: Una lista de los pedidos realizados por el cliente.
+
+    Métodos:
+    - __init__(self, nombre, apellido, dni, mail, calle, altura, telefono, nombre_usuario, password): Constructor de la clase.
+    - __str__(self): Devuelve una representación en forma de cadena del cliente.
+    - crear_cliente(): Método estático para crear un nuevo cliente solicitando los datos al usuario.
+    - repetir_pedido(self, n, tienda): Repite un pedido anterior del cliente en la tienda.
+    - confirmar_pedido(self, pedido, tienda): Confirma un pedido realizado por el cliente en la tienda.
+    - cambiar_info(self, opcion): Permite al cliente cambiar su información personal.
+    - cambiar_contrasena(self): Permite al cliente cambiar su contraseña.
+
+
+    """
+
     def __init__(self, nombre, apellido, dni, mail, calle, altura, telefono, nombre_usuario, password):
+        """
+        Inicializa un objeto Cliente.
+        :param nombre: El nombre del cliente.
+        :param apellido: El apellido del cliente.
+        :param dni: El DNI del cliente.
+        :param mail: El correo electrónico del cliente.
+        :param calle: La calle del cliente.
+        :param altura: La altura del cliente.
+        :param telefono: El teléfono del cliente.
+        :param nombre_usuario: El nombre de usuario del cliente.
+        :param password: La contraseña del cliente.
+        """
         super().__init__(nombre, apellido, dni, mail, calle, altura, telefono)
         self.nombre_usuario = nombre_usuario
         self.password = password
         self.pedidos = []
 
+    def __str__(self):
+        """
+        Devuelve una representación en forma de cadena del cliente.
+        :return: Cadena con la información del cliente.
+        """
+        return f"Cliente: {self.nombre} {self.apellido}\nDNI: {self.dni}\nEmail: {self.mail}\nDirección: {self.calle} {self.altura}\nTeléfono: {self.telefono}"
+
     @staticmethod
     def crear_cliente():
+        """
+        Crea un nuevo cliente solicitando los datos al usuario.
+        :return: Un objeto Cliente con los datos ingresados por el usuario.
+        """
         nombre = input('Ingrese su nombre: ')
         while verNombre(nombre) == False:
             nombre = input("Por favor, ingrese un nombre válido: ")
@@ -43,13 +94,25 @@ class Cliente(Persona):
 
         return Cliente(nombre, apellido, dni, mail, calle, altura, telefono, nombre_usuario, password)
 
-    def repetir_pedido(self,n,tienda):
-        pedido_anterior = self.pedidos[n-1]
-        pedido = Pedido(nombre_usuario=self,productos=tienda.productos)
+    def repetir_pedido(self, n, tienda):
+        """
+        Repite un pedido anterior del cliente en la tienda.
+        :param n: El número del pedido a repetir.
+        :param tienda: El objeto Tienda en el que se realizará el pedido.
+        :return: None
+        """
+        pedido_anterior = self.pedidos[n - 1]
+        pedido = Pedido(nombre_usuario=self, productos=tienda.productos)
         pedido.hacer_pedido(pedido_anterior)
-        self.confirmar_pedido(pedido,tienda)
+        self.confirmar_pedido(pedido, tienda)
 
     def confirmar_pedido(self, pedido, tienda):
+        """
+        Confirma un pedido realizado por el cliente en la tienda.
+        :param pedido: El objeto Pedido a confirmar.
+        :param tienda: El objeto Tienda en el que se realizará el pedido.
+        :return: None
+        """
         opcion = input("Presione 1 si quiere confirmar su pedido, cualquier otra tecla en caso contrario")
         if opcion == "1":
             self.pedidos.append(pedido)
@@ -58,11 +121,16 @@ class Cliente(Persona):
             generar_factura = input("Presione 1 si quiere generar una factura")
             if generar_factura == "1":
                 # esto le da la opcion al cliente de generar un txt
-                tienda.factura(self,pedido)
+                tienda.factura(self, pedido)
         else:
             pass
 
     def cambiar_info(self, opcion):
+        """
+        Permite al cliente cambiar su información personal.
+        :param opcion: La opción seleccionada por el cliente.
+        :return: None
+        """
         match opcion:
             case "1":
                 nuevo_nombre = input("Ingrese el nuevo nombre: ")
@@ -109,8 +177,11 @@ class Cliente(Persona):
                 self.telefono = nuevo_telefono
                 print("¡El teléfono se ha actualizado correctamente!")
 
-
     def cambiar_contrasena(self):
+        """
+        Permite al cliente cambiar su contraseña.
+        :return: None
+        """
         contrasena_actual = input("Ingrese su contraseña actual: ")
         if contrasena_actual != self.password:
             print("Contraseña incorrecta. No se puede cambiar la contraseña.")
@@ -125,9 +196,3 @@ class Cliente(Persona):
 
         self.password = nueva_contrasena
         print("¡La contraseña se ha cambiado exitosamente!")
-
-    def __str__(self):
-        return f"Cliente: {self.nombre} {self.apellido}\nDNI: {self.dni}\nEmail: {self.mail}\nDirección: {self.calle} {self.altura}\nTeléfono: {self.telefono}"
-
-
-

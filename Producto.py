@@ -1,7 +1,27 @@
 from Validadores import *
+
+
 class Producto:
+    """
+    Representa los productos disponibles en la tienda de cupcakes.
+
+    Atributos:
+    - sabor (dict): Un diccionario que contiene los sabores de cupcakes disponibles y sus precios.
+    - relleno (dict): Un diccionario que contiene los tipos de relleno disponibles y sus precios.
+    - cobertura (dict): Un diccionario que contiene las opciones de cobertura disponibles y sus precios.
+    - sprinkle (dict): Un diccionario que contiene las opciones de sprinkle disponibles y sus precios.
+
+    Métodos:
+    - __init__(self): Inicializa una instancia de la clase Producto.
+    - __str__(self): Devuelve una representación en cadena de los productos.
+    - ver_productos(self, opcion=None, modificar=False): Muestra los productos disponibles en la tienda.
+    """
+
     def __init__(self):
-        # aca los guardo como diccionario
+        """
+        Inicializa una instancia de la clase Producto.
+        Lo inicizaliza en tipo diccionario
+        """
         self.sabor = {
             "Chocolate": 100,
             "Vainilla": 200,
@@ -27,18 +47,37 @@ class Producto:
         }
 
     def __str__(self):
+        """
+        Devuelve una representación en cadena de los productos.
+        :return: Una representación en cadena de los productos.
+        :rtype: str
+        """
         return f"Producto\nSabor: {self.sabor}\nRelleno: {self.relleno}\nCobertura: {self.cobertura}\nSprinkle: {self.sprinkle}"
 
     def ver_productos(self, opcion=None, modificar=False):
+        """
+        Muestra los productos disponibles en la tienda.
+        :param opcion: La opción seleccionada por el usuario (opcional).
+        :type opcion: int, optional
+        :param modificar: Indica si se está realizando una modificación de productos (opcional).
+        :type modificar: bool, optional
+        :return: El diccionario correspondiente a la opción seleccionada.
+        :rtype: dict
+        """
         if opcion == None:
             opcion = input("Seleccione una opcion: \n 1.Sabores \n 2.Rellenos \n 3.Coberturas \n 4.Sprinkles\n")
             while not verificar_rango(opcion, 4):
                 opcion = input(
                     "Seleccione una opcion valida: \n 1.Sabores \n 2.Rellenos \n 3.Coberturas \n 4.Sprinkles\n")
 
-        producto = self
-
         def mostrar(productos, tipo):
+            """
+            Muestra los productos de un tipo específico.
+            :param productos: El diccionario de productos de un tipo específico.
+            :type productos: dict
+            :param tipo: El tipo de producto.
+            :type tipo: str
+            """
             cont = 0
             print(f"{tipo} disponibles:")
             for tipo_de_parte, precio in productos.items():
@@ -61,18 +100,3 @@ class Producto:
             case 4:
                 mostrar(self.sprinkle, "Sprinkles")
                 return self.sprinkle
-
-    def modificar_producto(self):
-        diccionario_a_modificar = self.ver_productos(modificar=True)
-        key_a_modificar = "a"  # pasamos este parametro para entrar directamente al while
-        while not verificar_rango(key_a_modificar, len(diccionario_a_modificar) + 1):
-            key_a_modificar = input("Que tipo quiere modificar?")
-        try:
-            opcion_seleccionada = list(diccionario_a_modificar)[int(key_a_modificar) - 1]
-        except IndexError:
-            opcion_seleccionada = input("Que le gustaria agregar?")
-        precio = input("Que precio le gustaria?")
-        while not es_int(precio):
-            print("Ingrese un numero por favor")
-            precio = input("Que precio le gustaria?")
-        diccionario_a_modificar[opcion_seleccionada] = int(precio)
