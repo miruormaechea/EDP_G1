@@ -1,6 +1,7 @@
 from Persona import *
 import matplotlib.pyplot as plt
 from Validadores import *
+from Pedidos import *
 class Admin(Persona):
     def __init__(self, nombre, apellido,dni, mail, calle, altura, telefono, nombre_usuario, password):
         super().__init__(nombre, apellido, dni, mail, calle, altura, telefono)
@@ -9,26 +10,39 @@ class Admin(Persona):
     def __str__(self):
         return f"Admin: {self.nombre} {self.apellido}\nUsername: {self.nombre_usuario}"
 
-    def menu(self, tienda):
-        while True:
-            print("Bienvenido administrador!")
-            print("1. Ver productos actuales")
-            print("2. Ver estadisticas")
-            print("3. Editar productos")
-            print("4. Cerrar Sesion")
-            opcion = "a"
-            while not verificar_rango(opcion, 4):
-                opcion = input("Elija una opcion: ")
-            match opcion:
-                case "1":
-                    tienda.productos.ver_productos()
-                case "2":
-                    self.ver_estadisticas(tienda)
-                    pass
-                case "3":
-                    tienda.productos.modificar_producto()
-                case "4":
-                    break
+    def crear_admin(self):
+        nombre = input('Ingrese su nombre: ')
+        while verNombre(nombre) == False:
+            nombre = input("Por favor, ingrese un nombre válido: ")
+
+        apellido = input('Ingrese su apellido: ')
+        while verNombre(apellido) == False:
+            apellido = input("Por favor, ingrese un apellido válido: ")
+
+        dni = input('Ingrese su DNI: ')
+        while verDNI(dni) == False:
+            dni = input("Ingrese un DNI valido: ")
+
+        mail = input('Ingrese su mail: ')
+        while verMail(mail) == False:
+            mail = input("Ingrese un email valido: ")
+
+        calle = input('Ingrese su calle: ')
+        while verNombre(calle) == False:
+            calle = input("Ingrese una calle valída: ")
+
+        altura = input('Ingrese su altura: ')
+        while verAltura(altura) == False:
+            altura = input("Ingrese una altura valída: ")
+
+        telefono = input('Ingrese su telefono: ')
+        while verTelefono(telefono) == False:
+            telefono = input("Ingrese un teléfono valido: ")
+
+        nombre_usuario = input('Ingrese un nombre de usuario: ')
+        password = input('Ingrese una contraseña: ')
+
+        return Admin(nombre, apellido, dni, mail, calle, altura, telefono, nombre_usuario, password)
 
     def ver_estadisticas(self, tienda):
         print('1. Sabores más pedidos')

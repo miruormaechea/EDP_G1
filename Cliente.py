@@ -58,22 +58,11 @@ class Cliente(Persona):
             generar_factura = input("Presione 1 si quiere generar una factura")
             if generar_factura == "1":
                 # esto le da la opcion al cliente de generar un txt
-                self.factura(self,pedido)
+                tienda.factura(self,pedido)
         else:
             pass
 
-    def cambiar_info(self):
-        print("Seleccione la información que desea cambiar:")
-        print("1. Nombre")
-        print("2. Apellido")
-        print("3. DNI")
-        print("4. Mail")
-        print("5. Calle")
-        print("6. Altura")
-        print("7. Teléfono")
-        opcion = input("Ingrese el número de opción: ")
-        while not verificar_rango(opcion, 5):
-            opcion = input("Elija una opcion: ")
+    def cambiar_info(self, opcion):
         match opcion:
             case "1":
                 nuevo_nombre = input("Ingrese el nuevo nombre: ")
