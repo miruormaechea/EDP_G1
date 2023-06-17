@@ -106,3 +106,4 @@ class Pedido():
             break
 
         print(f"Su pedido ha sido registrado con éxito. Total a pagar: ${total}")
+

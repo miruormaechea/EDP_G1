@@ -120,7 +120,7 @@ class Tienda:
         :return: None
         """
         timestamp = datetime.now().strftime("%Y-%m-%d-%H-%M-%S")
-        archivo_factura = f"C:/Users/ormae/OneDrive/Documents/factura_{usuario_seleccionado.nombre}_{timestamp}.txt"
+        archivo_factura = f"./factura_{usuario_seleccionado.nombre}_{timestamp}.txt"
         with open(archivo_factura, "w") as archivo:
             # escribe la info en el archivo
             archivo.write(str(pedido) + "Fecha:" + timestamp)

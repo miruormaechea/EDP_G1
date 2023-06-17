@@ -111,8 +111,8 @@ class Admin(Persona):
         :return: None
         """
         opcion = input(
-            'Seleccione una opción:\n1. Cantidad de pedidos por sabor\n2. Cantidad de pedidos por cobertura ')
-        while not es_int(opcion) or not verificar_rango(opcion, 2):
+            'Seleccione una opción:\n1. Cantidad de pedidos por sabor\n2. Cantidad de pedidos por cobertura\n3.Gasto por Usuario ')
+        while not es_int(opcion) or not verificar_rango(opcion, 3):
             opcion = input('Seleccione una opción válida: ')
 
         match int(opcion):
@@ -147,4 +147,21 @@ class Admin(Persona):
                 plt.xlabel("Cobertura")
                 plt.ylabel('Cantidad de pedidos')
                 plt.bar(sabores_pedidos, cantidad, color="green", width=0.5)
+                plt.show()
+            case 3:
+                dic_monto = {}
+                pedido: Pedido
+                for pedido in tienda.pedidos:
+                    if pedido.nombre_usuario not in dic_monto:
+                        dic_monto[pedido.nombre_usuario.nombre_usuario] = pedido.total
+                    else:
+                        dic_monto[pedido.nombre_usuario] += pedido.total
+
+                usuarios = list(dic_monto.keys())
+                montos = list(dic_monto.values())
+
+                plt.title(label="Gasto total por usuario", fontsize=20, color="black")
+                plt.xlabel("Usuarios")
+                plt.ylabel('total')
+                plt.bar(usuarios, montos, color="green", width=0.5)
                 plt.show()
